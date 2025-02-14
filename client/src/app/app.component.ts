@@ -4,10 +4,9 @@ import {Observable, Observer, share} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html'
+    selector: 'app-root',
+    imports: [],
+    templateUrl: './app.component.html'
 })
 export class AppComponent {
 
