@@ -1,4 +1,4 @@
-import {Component, NgZone} from '@angular/core';
+import { Component, NgZone, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {Observable, Observer, share} from "rxjs";
 import {HttpClient} from "@angular/common/http";
@@ -9,11 +9,14 @@ import {HttpClient} from "@angular/common/http";
     templateUrl: './app.component.html'
 })
 export class AppComponent {
+  private readonly zone = inject(NgZone);
+  private readonly httpClient = inject(HttpClient);
+
 
   private eventSource: EventSource | undefined;
   private readonly sseApi = 'http://localhost:8080';
 
-  constructor(private readonly zone: NgZone, private readonly httpClient: HttpClient) {
+  constructor() {
     this.subscribe('progress', 'client1').subscribe((data) => {
       console.log('Data received: ', data);
     });
