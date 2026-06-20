@@ -1,68 +1,40 @@
-import { Component, NgZone, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import {Observable, Observer, share} from "rxjs";
-import {HttpClient} from "@angular/common/http";
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnDestroy, signal } from '@angular/core';
+
+interface ProgressEvent {
+  status: string;
+  percentage: number;
+}
 
 @Component({
-    selector: 'app-root',
-    imports: [],
-    templateUrl: './app.component.html'
+  selector: 'app-root',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DecimalPipe],
+  templateUrl: './app.component.html',
 })
-export class AppComponent {
-  private readonly zone = inject(NgZone);
-  private readonly httpClient = inject(HttpClient);
+export class AppComponent implements OnDestroy {
+  protected readonly progress = signal<ProgressEvent | undefined>(undefined);
+  protected readonly message = signal('Waiting for server events...');
+  protected readonly connectionState = signal('connecting');
 
+  private readonly eventSource = new EventSource('http://localhost:8080/register/client1');
 
-  private eventSource: EventSource | undefined;
-  private readonly sseApi = 'http://localhost:8080';
-
-  constructor() {
-    this.subscribe('progress', 'client1').subscribe((data) => {
-      console.log('Data received: ', data);
+  public constructor() {
+    this.eventSource.onopen = () => {
+      this.connectionState.set('connected');
+    };
+    this.eventSource.onerror = () => {
+      this.connectionState.set('reconnecting');
+    };
+    this.eventSource.addEventListener('progress', (event) => {
+      this.progress.set(JSON.parse(event.data) as ProgressEvent);
+    });
+    this.eventSource.addEventListener('event', (event) => {
+      this.message.set(event.data);
     });
   }
 
-  private getEventSource(clientId: string, eventType: string): EventSource {
-    if (!this.eventSource) {
-      this.eventSource = new EventSource(`${this.sseApi}/register/${eventType}/${clientId}`);
-    }
-
-    return this.eventSource;
-  }
-
-  public subscribe(eventType: string, clientId: string): Observable<any> {
-    const eventSource = this.getEventSource(clientId, eventType);
-
-    eventSource.onmessage = function(event) {
-      console.log('Message from server ', event.data);
-      // Update progress bar based on event data
-    };
-
-    eventSource.onerror = function(err) {
-      console.error('EventSource failed:', err);
-    };
-
-    return new Observable((observer: Observer<any>) => {
-      const eventListener = (event: any) => {
-        this.zone.run(() => observer.next(JSON.parse(event.data)));
-      }
-
-      eventSource.addEventListener(eventType, eventListener);
-      return () => {
-        eventSource.removeEventListener(eventType, eventListener);
-      }
-    })
-      .pipe(
-        share()
-      );
-  }
-
-  public unsubscribe(eventType: string, clientId: string): void {
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = undefined;
-    }
-
-    this.httpClient.get(`${this.sseApi}/unregister/${clientId}`).subscribe();
+  public ngOnDestroy(): void {
+    this.eventSource.close();
   }
 }

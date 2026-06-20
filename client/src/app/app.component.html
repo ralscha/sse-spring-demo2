@@ -1,2 +1,21 @@
-<div>Hello World</div>
+<main>
+  <section>
+    <h1>Live server events</h1>
+    <p class="status">Connection: {{ connectionState() }}</p>
+  </section>
 
+  <section class="panel">
+    <h2>Progress</h2>
+    @if (progress(); as currentProgress) {
+      <progress max="100" [value]="currentProgress.percentage"></progress>
+      <p>{{ currentProgress.status }} - {{ currentProgress.percentage | number: '1.0-1' }}%</p>
+    } @else {
+      <p>Waiting for progress...</p>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>Message</h2>
+    <p>{{ message() }}</p>
+  </section>
+</main>

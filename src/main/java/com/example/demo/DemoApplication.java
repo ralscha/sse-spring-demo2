@@ -20,6 +20,10 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 public class DemoApplication {
 
+	private static final long SSE_TIMEOUT = 0L;
+
+	private static final String[] DEMO_EVENTS = { "progress", "event" };
+
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 	}
@@ -31,13 +35,11 @@ public class DemoApplication {
 	}
 
 	@CrossOrigin(origins = "http://localhost:4200")
-	@GetMapping(path = "/register/{eventType}/{clientId}",
-			produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public SseEmitter registerEvent(@PathVariable("eventType") String eventType,
-			@PathVariable("clientId") String clientId, HttpServletResponse response) {
-		response.addHeader("Cache-Control", "no-store");
-		response.addHeader("Connection", "Keep-Alive");
+	@GetMapping(path = "/register/{clientId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	public SseEmitter registerClient(@PathVariable("clientId") String clientId,
+			HttpServletResponse response) {
+		response.setHeader("Cache-Control", "no-store");
 
-		return this.eventBus.createSseEmitter(clientId, 30_000L, eventType);
+		return this.eventBus.createSseEmitter(clientId, SSE_TIMEOUT, DEMO_EVENTS);
 	}
 }

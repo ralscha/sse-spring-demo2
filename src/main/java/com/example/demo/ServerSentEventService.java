@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -42,7 +44,7 @@ public class ServerSentEventService {
 	@Scheduled(initialDelay = 2000, fixedRate = 5_000)
 	public void sendData() {
 		this.sendProgress("client1", "progress", StatusEnum.IN_PROGRESS,
-				Math.random() * 100);
+				ThreadLocalRandom.current().nextDouble(100.0));
 		this.sendEvent("client1", "event", "Hello World");
 	}
 }
