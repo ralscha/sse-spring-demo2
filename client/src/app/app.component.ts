@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, signal } from '@angular/core';
+import { Component, OnDestroy, signal } from '@angular/core';
 
 interface ProgressEvent {
   status: string;
@@ -8,7 +8,6 @@ interface ProgressEvent {
 
 @Component({
   selector: 'app-root',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DecimalPipe],
   templateUrl: './app.component.html',
 })

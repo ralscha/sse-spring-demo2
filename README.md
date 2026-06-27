@@ -45,3 +45,5 @@ cd client
 npm run build
 ```
 
+`npm audit --omit=dev` currently reports no production vulnerabilities. Remaining full-audit findings are in Angular build tooling.
+
